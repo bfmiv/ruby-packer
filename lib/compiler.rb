@@ -514,8 +514,8 @@ class Compiler
     @local_toolchain = {
       'CI' => 'true',
       'PATH' => @path_env,
-      'GEM_HOME' => nil,
-      'GEM_PATH' => nil,
+      'GEM_HOME' => ENV['GEM_HOME'],
+      'GEM_PATH' => ENV['GEM_PATH'],
       'ENCLOSE_IO_USE_ORIGINAL_RUBY' => '1',
       'ENCLOSE_IO_RUBYC_1ST_PASS' => '1',
       'ENCLOSE_IO_RUBYC_2ND_PASS' => nil
