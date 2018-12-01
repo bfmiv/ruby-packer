@@ -252,6 +252,7 @@ class Compiler
   def clean_env
     ENV.delete 'BUNDLE_BIN_PATH'  # disable loading outside bundler
     ENV.delete 'BUNDLE_GEMFILE'   # disable loading outside bundler
+    ENV.delete 'BUNDLE_PATH'      # disable loading outside bundler
     ENV.delete 'GEM_HOME'         # use default gem install location
     ENV.delete 'GEM_PATH'         # use default installed gem locations
     ENV.delete 'RUBYGEMS_GEMDEPS' # disable loading outside gems
@@ -297,10 +298,10 @@ class Compiler
                  @gem, "install", gem,
                        "--no-document")
 
-      if File.exist?(File.join(@gems_dir, "bin/#{@entrance}"))
+      if File.exist?(File.join(@gems_dir, 'bin', @entrance))
         @memfs_entrance = "#{MEMFS}/lib/ruby/gems/#{self.class.ruby_api_version}/bin/#{@entrance}"
       else
-        if File.exist?(File.join(@gems_dir, "bin/#{File.basename(@entrance)}"))
+        if File.exist?(File.join(@gems_dir, 'bin', File.basename(@entrance)))
           @entrance = File.basename(@entrance)
           @memfs_entrance = "#{MEMFS}/lib/ruby/gems/#{self.class.ruby_api_version}/bin/#{@entrance}"
         else
@@ -409,16 +410,14 @@ class Compiler
                  @gem, "install", gem,
                       "--no-document")
 
-      if File.exist?(File.join(@gems_dir, "bin/#{@entrance}"))
+      if File.exist?(File.join(@gems_dir, 'bin', @entrance))
+        @memfs_entrance = "#{MEMFS}/lib/ruby/gems/#{self.class.ruby_api_version}/bin/#{@entrance}"
+      elsif File.exist?(File.join(@gems_dir, 'bin', File.basename(@entrance)))
+        @entrance = File.basename(@entrance)
         @memfs_entrance = "#{MEMFS}/lib/ruby/gems/#{self.class.ruby_api_version}/bin/#{@entrance}"
       else
-        if File.exist?(File.join(@gems_dir, "bin/#{File.basename(@entrance)}"))
-          @entrance = File.basename(@entrance)
-          @memfs_entrance = "#{MEMFS}/lib/ruby/gems/#{self.class.ruby_api_version}/bin/#{@entrance}"
-        else
-          @utils.chdir(File.join(@gems_dir, "bin")) do
-            raise Error, "Cannot find entrance #{@entrance}, available entrances are #{ Dir["*"].join(", ") }."
-          end
+        @utils.chdir(File.join(@gems_dir, "bin")) do
+          raise Error, "Cannot find entrance #{@entrance}, available entrances are #{ Dir["*"].join(", ") }."
         end
       end
     end
@@ -788,7 +787,7 @@ class Compiler
     @utils.mkdir_p(@work_dir)
 
     @work_dir_inner = File.join(@work_dir, '__enclose_io_memfs__')
-    @utils.mkdir @work_dir_inner
+    @utils.mkdir_p(@work_dir_inner)
 
     @gems_dir =
       File.join(@ruby_install_1, "lib", "ruby", "gems", self.class.ruby_api_version)
